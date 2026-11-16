@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Python шпаргалка</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Golos+Text:wght@400;500;600;700&display=swap">
+<style>
+/* Одна узкая колонка: липкая шапка с поиском и чипами разделов, ниже — карточки «клик = копировать».
+   Данные приходят из data.js; правки в браузере хранятся как «оверлей» в localStorage. */
+:root{
+  --bg:#eef1f5; --surface:#ffffff; --surface-2:#f6f8fb; --line:#d9dfe8;
+  --fg:#172030; --muted:#5d6878; --accent:#2f5fd0; --accent-soft:#e3ebfb;
+  --ok:#1f8a4c; --ok-soft:#dcf2e5; --danger:#c2412d; --warn:#9a6700; --warn-soft:#fff3c4;
+  --mark:#ffe58a;
+  --kw:#8a3ab9; --str:#1f7a46; --num:#b15c00; --com:#7d8796; --fn:#2f5fd0;
+  --f-ui:"Golos Text", "Segoe UI", system-ui, sans-serif;
+  --f-code:"JetBrains Mono", ui-monospace, "Cascadia Code", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12161d; --surface:#1a2029; --surface-2:#151a22; --line:#2a3240;
+  --fg:#e3e8ef; --muted:#93a0b2; --accent:#7ea3ff; --accent-soft:#1f2b45;
+  --ok:#5fd393; --ok-soft:#173326; --danger:#ff8a75; --warn:#f2c14e; --warn-soft:#3a2f10;
+  --mark:#6b5a12;
+  --kw:#d39bff; --str:#8fdca8; --num:#ffbf70; --com:#738095; --fn:#8fb2ff; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12161d; --surface:#1a2029; --surface-2:#151a22; --line:#2a3240;
+  --fg:#e3e8ef; --muted:#93a0b2; --accent:#7ea3ff; --accent-soft:#1f2b45;
+  --ok:#5fd393; --ok-soft:#173326; --danger:#ff8a75; --warn:#f2c14e; --warn-soft:#3a2f10;
+  --mark:#6b5a12;
+  --kw:#d39bff; --str:#8fdca8; --num:#ffbf70; --com:#738095; --fn:#8fb2ff; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{margin:0}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-ui);font-size:15px;line-height:1.45}
+.wrap{max-width:760px;margin:0 auto;padding-inline:16px;padding-block:0 64px}
+
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:12px 10px;display:grid;gap:10px;border-bottom:1px solid var(--line)}
+.top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+h1{font-size:18px;font-weight:700;margin:0;letter-spacing:-.01em;flex:1;min-width:0}
+h1 small{font-weight:500;color:var(--muted);font-size:13px;margin-left:6px}
+.btn{font:inherit;font-size:14px;font-weight:600;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:8px;padding:7px 12px;cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.btn.small{font-size:12px;padding:4px 9px;font-weight:500}
+.btn:focus-visible,.chip:focus-visible,.card:focus-visible,.icon:focus-visible,input:focus-visible,textarea:focus-visible,.tag:focus-visible,.sec-h:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.search{display:flex;gap:8px;align-items:center}
+.search input{flex:1;min-width:0;font:inherit;padding:9px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--fg)}
+.search .found{font-size:12px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+kbd{font-family:var(--f-code);font-size:11px;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 4px;color:var(--muted)}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:thin}
+.chip{flex:none;font:inherit;font-size:13px;font-weight:500;border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:999px;padding:4px 11px;cursor:pointer;white-space:nowrap}
+.chip[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent);border-color:var(--accent)}
+.chip .n{font-variant-numeric:tabular-nums;opacity:.7;margin-left:4px}
+.hint{font-size:12px;color:var(--muted)}
+.banner{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px;background:var(--warn-soft);color:var(--warn);border:1px solid var(--warn);border-radius:8px;padding:6px 10px}
+.banner b{font-weight:600}
+.banner .btn{border-color:var(--warn);color:var(--warn);background:transparent}
+
+main{display:grid;gap:18px;padding-top:16px}
+section{display:grid;gap:8px}
+.sec-h{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin:0;cursor:pointer;user-select:none;border:0;background:none;padding:4px 0;font-family:inherit;text-align:left;width:100%}
+.sec-h .arrow{display:inline-block;transition:transform .12s;font-size:10px}
+.sec-h .n{font-variant-numeric:tabular-nums;opacity:.7;font-weight:500;letter-spacing:0;text-transform:none}
+section.collapsed .sec-h .arrow{transform:rotate(-90deg)}
+section.collapsed .list{display:none}
+.list{display:grid;gap:8px}
+.card{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer;display:grid;gap:6px;min-width:0;transition:border-color .12s,background .12s}
+.card:hover{border-color:var(--accent)}
+.card.copied{border-color:var(--ok);background:var(--ok-soft)}
+.card.local::before{content:"";position:absolute;left:0;top:10px;bottom:10px;width:3px;border-radius:3px;background:var(--warn)}
+.card-head{display:flex;align-items:center;gap:8px;min-width:0}
+.title{font-weight:600;font-size:14px;flex:1;min-width:0}
+.title .pin{color:var(--num);margin-right:4px}
+.tools{display:flex;gap:2px;opacity:0;transition:opacity .12s}
+.card:hover .tools,.card:focus-within .tools{opacity:1}
+@media (hover:none){.tools{opacity:1}}
+.icon{font:inherit;font-size:13px;border:0;background:transparent;color:var(--muted);border-radius:6px;padding:2px 7px;cursor:pointer;white-space:nowrap}
+.icon:hover{background:var(--surface-2);color:var(--fg)}
+.icon.del:hover{color:var(--danger)}
+.status{font-size:12px;font-weight:600;color:var(--ok);display:none}
+.card.copied .status{display:inline}
+pre{margin:0;font-family:var(--f-code);font-size:13px;line-height:1.55;background:var(--surface-2);border-radius:6px;padding:8px 10px;overflow-x:auto;white-space:pre;tab-size:4}
+.note{font-size:13px;color:var(--muted)}
+.tags{display:flex;gap:4px;flex-wrap:wrap}
+.tag{font:inherit;font-size:11px;font-weight:500;color:var(--muted);background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:1px 8px;cursor:pointer}
+.tag:hover{color:var(--accent);border-color:var(--accent)}
+mark{background:var(--mark);color:inherit;border-radius:2px;padding:0 1px}
+body.compact pre{max-height:4.8em;overflow:hidden}
+body.compact .note,body.compact .tags{display:none}
+.t-kw{color:var(--kw)} .t-str{color:var(--str)} .t-num{color:var(--num)} .t-com{color:var(--com);font-style:italic} .t-fn{color:var(--fn)}
+
+.confirm{display:flex;gap:6px;align-items:center;font-size:13px}
+.confirm button{font:inherit;font-size:12px;padding:3px 9px;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer}
+.confirm .yes{border-color:var(--danger);color:var(--danger)}
+
+form.editor{background:var(--surface);border:1px solid var(--accent);border-radius:10px;padding:12px;display:grid;gap:8px;margin-top:14px}
+form.editor label{font-size:12px;font-weight:600;color:var(--muted);display:grid;gap:4px}
+form.editor input,form.editor textarea{font:inherit;padding:8px 10px;border-radius:7px;border:1px solid var(--line);background:var(--surface-2);color:var(--fg);width:100%}
+form.editor textarea{font-family:var(--f-code);font-size:13px;min-height:120px;resize:vertical;tab-size:4}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.row > label{flex:1;min-width:180px}
+.actions{display:flex;gap:8px;justify-content:flex-end;align-items:center}
+.actions .hint{margin-right:auto}
+.empty{padding:28px 16px;text-align:center;color:var(--muted);background:var(--surface);border:1px dashed var(--line);border-radius:10px}
+.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);font-size:13px;font-weight:600;padding:7px 14px;border-radius:999px;pointer-events:none;opacity:0;transition:opacity .15s;z-index:10}
+.toast.show{opacity:1}
+.totop{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:6;opacity:0;pointer-events:none;transition:opacity .15s}
+.totop.show{opacity:1;pointer-events:auto}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+@media (max-width:520px){ .top .btn{font-size:12px;padding:6px 9px} h1{flex-basis:100%} }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="top">
+      <h1>Python шпаргалка <small id="count"></small></h1>
+      <button class="btn secondary" id="themeBtn" type="button" title="Светлая / тёмная тема">◐</button>
+      <button class="btn secondary" id="densityBtn" type="button" title="Показывать код целиком или коротко">Компактно</button>
+      <button class="btn secondary" id="collapseBtn" type="button" title="Свернуть или развернуть все разделы">Свернуть все</button>
+      <button class="btn secondary" id="exportBtn" type="button" title="Скачать data.js со всеми правками — для загрузки в репозиторий">⬇ data.js</button>
+      <button class="btn primary" id="addBtn" type="button">+ Добавить</button>
+    </div>
+    <div class="search">
+      <input id="q" type="search" placeholder="Поиск: название, код, заметка, тег…" autocomplete="off" aria-label="Поиск">
+      <span class="found" id="found"></span>
+    </div>
+    <div class="chips" id="chips" role="toolbar" aria-label="Разделы"></div>
+    <div class="banner" id="banner" hidden>
+      <span>Правок только в этом браузере: <b id="bannerN"></b>. Чтобы они появились везде — <b>⬇ data.js</b> и залейте файл в репозиторий.</span>
+      <button class="btn small" id="resetBtn" type="button" title="Удалить локальные правки и вернуться к data.js">Сбросить правки</button>
+    </div>
+    <div class="hint">Клик по карточке — код в буфере. <kbd>/</kbd> поиск · <kbd>Esc</kbd> очистить · <kbd>Ctrl</kbd>+<kbd>V</kbd> на странице — новый сниппет из буфера</div>
+  </header>
+  <div id="editorSlot"></div>
+  <main id="main">
+    <div class="empty" id="loading">Загружаю…</div>
+  </main>
+</div>
+<button class="btn totop" id="totop" type="button" title="Наверх">↑</button>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="data.js"></script>
+<script>
+(function(){
+  const $ = s => document.querySelector(s);
+  const DATA = window.PY_DATA || { sections: [], snippets: [] };
+  const state = { items: [], q: "", section: "Все", editing: null, confirmDel: null, collapsed: new Set() };
+  const store = {
+    get(k, d){ try { const v = localStorage.getItem(k); return v === null ? d : v; } catch(e){ return d; } },
+    set(k, v){ try { localStorage.setItem(k, v); } catch(e){} },
+    del(k){ try { localStorage.removeItem(k); } catch(e){} }
+  };
+
+  // ---------- настройки вида ----------
+  let compact = store.get("compact", "0") === "1";
+  document.body.classList.toggle("compact", compact);
+  $("#densityBtn").textContent = compact ? "Полностью" : "Компактно";
+  const theme = store.get("theme", "");
+  if (theme) document.documentElement.dataset.theme = theme;
+  try { state.collapsed = new Set(JSON.parse(store.get("collapsed", "[]"))); } catch(e){}
+
+  // ---------- подсветка Python (мини-токенизатор) ----------
+  const KW = new Set("False True None and with as assert break class continue def del elif else except finally try for from global if import in is lambda nonlocal not or pass raise return while yield".split(" "));
+  const BI = new Set("print input int str float len range abs round sum min max type list dict set tuple sorted bool sqrt ceil floor factorial pow".split(" "));
+  const esc = s => s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  function highlight(code){
+    const re = /(#[^\n]*)|([fFrRbB]{0,2}(?:"""[\s\S]*?"""|'''[\s\S]*?'''|"(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])*'))|(\b\d+(?:_\d+)*(?:\.\d+)?\b)|([A-Za-z_][A-Za-z0-9_]*)/g;
+    let out = "", last = 0, m;
+    while ((m = re.exec(code))){
+      out += esc(code.slice(last, m.index));
+      const t = m[0];
+      if (m[1]) out += '<span class="t-com">'+esc(t)+'</span>';
+      else if (m[2]) out += '<span class="t-str">'+esc(t)+'</span>';
+      else if (m[3]) out += '<span class="t-num">'+t+'</span>';
+      else if (KW.has(t)) out += '<span class="t-kw">'+t+'</span>';
+      else if (BI.has(t)) out += '<span class="t-fn">'+t+'</span>';
+      else out += esc(t);
+      last = re.lastIndex;
+    }
+    return out + esc(code.slice(last));
+  }
+
+  // ---------- подсветка совпадений поиска в уже отрисованном узле ----------
+  function words(){ return state.q.toLowerCase().split(/\s+/).filter(Boolean); }
+  function markMatches(root, ws){
+    if (!ws.length) return;
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    const nodes = []; while (walker.nextNode()) nodes.push(walker.currentNode);
+    nodes.forEach(node => {
+      const text = node.nodeValue, low = text.toLowerCase();
+      const hits = [];
+      ws.forEach(w => { let i = 0; while ((i = low.indexOf(w, i)) !== -1){ hits.push([i, i + w.length]); i += w.length; } });
+      if (!hits.length) return;
+      hits.sort((a,b)=>a[0]-b[0]);
+      const frag = document.createDocumentFragment(); let pos = 0;
+      hits.forEach(([s,e]) => { if (s < pos) return; frag.append(text.slice(pos, s)); const m = document.createElement("mark"); m.textContent = text.slice(s, e); frag.append(m); pos = e; });
+      frag.append(text.slice(pos));
+      node.parentNode.replaceChild(frag, node);
+    });
+  }
+
+  // ---------- данные: base (data.js) + overlay (localStorage) ----------
+  const OKEY = "pysnips.overlay.v2";
+  let overlay = { added: [], changed: {}, deleted: [] };
+  try { const o = JSON.parse(store.get(OKEY, "null")); if (o && Array.isArray(o.added)) overlay = { added: o.added, changed: o.changed || {}, deleted: o.deleted || [] }; } catch(e){}
+  function saveOverlay(){
+    // чистим пустое
+    overlay.deleted = overlay.deleted.filter(id => DATA.snippets.some(s => s.id === id));
+    Object.keys(overlay.changed).forEach(id => { if (!DATA.snippets.some(s => s.id === id)) delete overlay.changed[id]; });
+    if (!overlay.added.length && !overlay.deleted.length && !Object.keys(overlay.changed).length) store.del(OKEY);
+    else { try { localStorage.setItem(OKEY, JSON.stringify(overlay)); } catch(e){ toast("Не удалось сохранить — скачайте data.js"); } }
+  }
+  function overlayCount(){ return overlay.added.length + overlay.deleted.length + Object.keys(overlay.changed).length; }
+  function build(){
+    const del = new Set(overlay.deleted);
+    const base = DATA.snippets.filter(s => !del.has(s.id)).map((s, i) => ({ tags: [], note: "", pinned: false, ...s, ...(overlay.changed[s.id] || {}), _order: i, _local: !!overlay.changed[s.id] }));
+    const added = overlay.added.map((s, i) => ({ tags: [], note: "", pinned: false, ...s, _order: DATA.snippets.length + i, _local: true }));
+    state.items = base.concat(added);
+    const banner = $("#banner"); const n = overlayCount();
+    banner.hidden = !n; $("#bannerN").textContent = n;
+  }
+  const col = {
+    update(id, patch){
+      const a = overlay.added.find(s => s.id === id);
+      if (a) Object.assign(a, patch);
+      else overlay.changed[id] = { ...(overlay.changed[id] || {}), ...patch };
+      saveOverlay(); build(); render();
+    },
+    remove(id){
+      if (overlay.added.some(s => s.id === id)) overlay.added = overlay.added.filter(s => s.id !== id);
+      else { delete overlay.changed[id]; if (!overlay.deleted.includes(id)) overlay.deleted.push(id); }
+      saveOverlay(); build(); render();
+    },
+    add(d){
+      const id = "u" + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+      overlay.added.push({ id, ...d }); saveOverlay(); build(); render();
+    }
+  };
+
+  // ---------- выборка ----------
+  function sections(){
+    const known = DATA.sections.slice();
+    state.items.forEach(it => { const s = it.section || "Без раздела"; if (!known.includes(s)) known.push(s); });
+    return known.filter(s => state.items.some(it => (it.section || "Без раздела") === s));
+  }
+  function hay(it){ return ((it.title||"")+" "+(it.code||"")+" "+(it.note||"")+" "+(it.section||"")+" "+(it.tags||[]).join(" ")).toLowerCase(); }
+  function matches(it){
+    if (state.section === "★ Закреплённые" && !it.pinned) return false;
+    if (state.section !== "Все" && state.section !== "★ Закреплённые" && (it.section||"Без раздела") !== state.section) return false;
+    const ws = words(); if (!ws.length) return true;
+    const h = hay(it);
+    return ws.every(w => h.includes(w));
+  }
+
+  // ---------- отрисовка ----------
+  function renderChips(){
+    const secs = sections();
+    const pinnedN = state.items.filter(i=>i.pinned).length;
+    const all = [["Все", state.items.length]];
+    if (pinnedN) all.push(["★ Закреплённые", pinnedN]);
+    secs.forEach(s => all.push([s, state.items.filter(i=>(i.section||"Без раздела")===s).length]));
+    if (!all.some(([n])=>n===state.section)) state.section = "Все";
+    const box = $("#chips"); box.textContent = "";
+    all.forEach(([name,n]) => {
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "chip"; b.setAttribute("aria-pressed", String(name===state.section));
+      b.append(name); const sp = document.createElement("span"); sp.className="n"; sp.textContent = n; b.append(sp);
+      b.onclick = () => { state.section = name; render(); window.scrollTo({top:0}); };
+      box.append(b);
+    });
+  }
+
+  function cardEl(it){
+    const c = document.createElement("div");
+    c.className = "card" + (it._local ? " local" : ""); c.tabIndex = 0; c.dataset.id = it.id;
+    c.setAttribute("role","button"); c.setAttribute("aria-label","Скопировать: "+(it.title||"сниппет"));
+    if (it._local) c.title = "Правка хранится только в этом браузере";
+    const head = document.createElement("div"); head.className = "card-head";
+    const t = document.createElement("div"); t.className = "title";
+    if (it.pinned){ const p = document.createElement("span"); p.className="pin"; p.textContent="★"; t.append(p); }
+    t.append(it.title || "Без названия");
+    const st = document.createElement("span"); st.className = "status"; st.textContent = "Скопировано";
+    head.append(t, st);
+    const tools = document.createElement("div"); tools.className = "tools";
+    if (state.confirmDel === it.id){
+      tools.style.opacity = 1;
+      const cf = document.createElement("div"); cf.className="confirm";
+      cf.append("Удалить?");
+      const y = document.createElement("button"); y.className="yes"; y.type="button"; y.textContent="Да";
+      const n = document.createElement("button"); n.type="button"; n.textContent="Нет";
+      y.onclick = e => { e.stopPropagation(); state.confirmDel = null; col.remove(it.id); toast("Удалено"); };
+      n.onclick = e => { e.stopPropagation(); state.confirmDel = null; render(); };
+      cf.append(y, n); tools.append(cf);
+    } else {
+      const mk = (label, title, fn, cls) => { const b=document.createElement("button"); b.type="button"; b.className="icon"+(cls?" "+cls:""); b.textContent=label; b.title=title; b.setAttribute("aria-label", title); b.onclick=e=>{e.stopPropagation(); fn();}; return b; };
+      tools.append(
+        mk("⧉", "Копировать код", ()=>copy(it.code || "", c)),
+        mk(it.pinned?"★":"☆", it.pinned?"Открепить":"Закрепить", ()=>col.update(it.id, { pinned: !it.pinned })),
+        mk("✎", "Изменить", ()=>openEditor(it)),
+        mk("✕", "Удалить", ()=>{ state.confirmDel = it.id; render(); }, "del")
+      );
+    }
+    head.append(tools);
+    const pre = document.createElement("pre"); pre.innerHTML = highlight(it.code || "");
+    c.append(head, pre);
+    if (it.note){ const n = document.createElement("div"); n.className="note"; n.textContent = it.note; c.append(n); }
+    if (it.tags && it.tags.length){
+      const tg = document.createElement("div"); tg.className = "tags";
+      it.tags.forEach(tag => { const b = document.createElement("button"); b.type="button"; b.className="tag"; b.textContent = "#" + tag; b.title = "Искать по тегу"; b.onclick = e => { e.stopPropagation(); $("#q").value = tag; state.q = tag; render(); }; tg.append(b); });
+      c.append(tg);
+    }
+    markMatches(t, words()); markMatches(pre, words()); const nn = c.querySelector(".note"); if (nn) markMatches(nn, words());
+    const doCopy = () => copy(it.code || "", c);
+    c.addEventListener("click", e => { if (window.getSelection && String(window.getSelection()).length > 0) return; doCopy(); });
+    c.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " "){ e.preventDefault(); doCopy(); }});
+    return c;
+  }
+
+  function render(){
+    renderChips();
+    const main = $("#main"); main.textContent = "";
+    $("#count").textContent = state.items.length ? state.items.length + " шт." : "";
+    const list = state.items.slice().sort((a,b)=>a._order-b._order);
+    const visible = list.filter(matches);
+    $("#found").textContent = state.q ? "найдено: " + visible.length : "";
+    if (!visible.length){
+      const e = document.createElement("div"); e.className="empty";
+      e.textContent = state.items.length ? "Ничего не найдено по запросу «"+state.q+"»." : "Пусто. Проверьте, что рядом с index.html лежит data.js.";
+      main.append(e); return;
+    }
+    const pinned = visible.filter(i=>i.pinned);
+    const groups = [];
+    if (pinned.length && state.section === "Все" && !state.q) groups.push(["★ Закреплённые", pinned]);
+    const rest = (state.section === "Все" && !state.q) ? visible.filter(i=>!i.pinned) : visible;
+    sections().forEach(s => { const g = rest.filter(i=>(i.section||"Без раздела")===s); if (g.length) groups.push([s, g]); });
+    const searching = !!state.q;
+    groups.forEach(([name, items]) => {
+      const sec = document.createElement("section");
+      const collapsed = !searching && state.collapsed.has(name);
+      if (collapsed) sec.classList.add("collapsed");
+      const h = document.createElement("button"); h.type = "button"; h.className = "sec-h";
+      const ar = document.createElement("span"); ar.className = "arrow"; ar.textContent = "▼";
+      const nm = document.createElement("span"); nm.textContent = name;
+      const n = document.createElement("span"); n.className = "n"; n.textContent = items.length;
+      h.append(ar, nm, n);
+      h.onclick = () => { if (state.collapsed.has(name)) state.collapsed.delete(name); else state.collapsed.add(name); store.set("collapsed", JSON.stringify([...state.collapsed])); sec.classList.toggle("collapsed"); updateCollapseBtn(); };
+      const l = document.createElement("div"); l.className = "list";
+      items.forEach(it => l.append(cardEl(it)));
+      sec.append(h, l); main.append(sec);
+    });
+    updateCollapseBtn();
+  }
+  function updateCollapseBtn(){
+    const all = sections(); const allCollapsed = all.length && all.every(s => state.collapsed.has(s));
+    $("#collapseBtn").textContent = allCollapsed ? "Развернуть все" : "Свернуть все";
+  }
+
+  // ---------- копирование ----------
+  let toastT;
+  function toast(msg){ const t=$("#toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("show"),1300); }
+  function flash(card){ document.querySelectorAll(".card.copied").forEach(c=>c.classList.remove("copied")); card.classList.add("copied"); setTimeout(()=>card.classList.remove("copied"), 1100); }
+  function fallbackCopy(text){
+    const ta = document.createElement("textarea"); ta.value = text; ta.setAttribute("readonly",""); ta.style.position="fixed"; ta.style.opacity="0";
+    document.body.append(ta); ta.select(); let ok=false; try { ok = document.execCommand("copy"); } catch(e){} ta.remove(); return ok;
+  }
+  function copy(text, card){
+    const done = () => { flash(card); toast("Скопировано"); };
+    try {
+      navigator.clipboard.writeText(text).then(done, () => { fallbackCopy(text) ? done() : toast("Не получилось — выделите код вручную"); });
+    } catch(e){ fallbackCopy(text) ? done() : toast("Не получилось — выделите код вручную"); }
+  }
+
+  // ---------- редактор ----------
+  function openEditor(it, prefillCode){
+    state.editing = it ? it.id : "new";
+    const slot = $("#editorSlot"); slot.textContent = "";
+    const f = document.createElement("form"); f.className = "editor";
+    const secs = sections();
+    const defSec = it ? (it.section||"") : (state.section !== "Все" && state.section !== "★ Закреплённые" ? state.section : (secs[secs.length-1]||""));
+    f.innerHTML =
+      '<div class="row"><label>Название<input id="f-title" required></label>'+
+      '<label>Раздел<input id="f-section" list="f-secs"></label></div>'+
+      '<datalist id="f-secs"></datalist>'+
+      '<label>Код<textarea id="f-code" required spellcheck="false"></textarea></label>'+
+      '<div class="row"><label>Заметка (необязательно)<input id="f-note"></label>'+
+      '<label>Теги через запятую<input id="f-tags" placeholder="for, цифры"></label></div>'+
+      '<div class="actions"><span class="hint">Сохранится в этом браузере; для всех устройств — ⬇ data.js</span><button type="button" class="btn" id="f-cancel">Отмена</button><button class="btn primary" type="submit">'+(it?"Сохранить":"Добавить")+'</button></div>';
+    slot.append(f);
+    const dl = f.querySelector("#f-secs"); secs.forEach(s=>{ const o=document.createElement("option"); o.value=s; dl.append(o); });
+    f.querySelector("#f-title").value = it ? (it.title||"") : "";
+    f.querySelector("#f-section").value = defSec;
+    f.querySelector("#f-code").value = it ? (it.code||"") : (prefillCode||"");
+    f.querySelector("#f-note").value = it ? (it.note||"") : "";
+    f.querySelector("#f-tags").value = it ? (it.tags||[]).join(", ") : "";
+    const ta = f.querySelector("#f-code");
+    ta.addEventListener("keydown", e => { if (e.key === "Tab"){ e.preventDefault(); const s=ta.selectionStart, en=ta.selectionEnd; ta.value = ta.value.slice(0,s)+"    "+ta.value.slice(en); ta.selectionStart=ta.selectionEnd=s+4; }});
+    f.querySelector("#f-cancel").onclick = closeEditor;
+    f.addEventListener("keydown", e => { if (e.key === "Escape") closeEditor(); });
+    f.addEventListener("submit", e => {
+      e.preventDefault();
+      const body = {
+        title: f.querySelector("#f-title").value.trim(),
+        section: f.querySelector("#f-section").value.trim() || "Без раздела",
+        code: ta.value.replace(/\s+$/,""),
+        note: f.querySelector("#f-note").value.trim(),
+        tags: f.querySelector("#f-tags").value.split(",").map(s=>s.trim()).filter(Boolean)
+      };
+      if (it){ col.update(it.id, body); toast("Сохранено"); }
+      else { col.add({ ...body, pinned:false }); toast("Добавлено"); }
+      closeEditor();
+    });
+    f.querySelector("#f-title").focus();
+    slot.scrollIntoView({block:"nearest"});
+  }
+  function closeEditor(){ state.editing = null; $("#editorSlot").textContent = ""; }
+
+  // ---------- экспорт data.js ----------
+  function js(s){ return JSON.stringify(s); }
+  function exportDataJs(){
+    const secs = sections();
+    const list = state.items.slice().sort((a,b)=>a._order-b._order);
+    let out = "// Python шпаргалка — ДАННЫЕ. Этот файл можно править прямо на GitHub.\n";
+    out += "// Формат: { id, section, title, code, note, tags: [], pinned }. \\n в code — перевод строки.\n";
+    out += "// Порядок внутри раздела = порядок в этом файле.\n\nwindow.PY_DATA = {\n\n  sections: [\n";
+    out += secs.map(s => "    " + js(s)).join(",\n") + "\n  ],\n\n  snippets: [\n";
+    const entries = [];
+    secs.forEach(sec => {
+      list.filter(it => (it.section||"Без раздела") === sec).forEach((it, i) => {
+        entries.push((i === 0 ? "\n    // ---------- " + sec + " ----------\n" : "") +
+                   "    { id: " + js(it.id) + ", section: " + js(it.section||"Без раздела") + ", title: " + js(it.title||"") + ",\n" +
+                   "      code: " + js(it.code||"") + ",\n" +
+                   "      note: " + js(it.note||"") + ", tags: " + js(it.tags||[]) + ", pinned: " + (it.pinned?"true":"false") + " }");
+      });
+    });
+    out += entries.join(",\n") + "\n  ]\n};\n";
+    const blob = new Blob([out], { type: "text/javascript" });
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "data.js";
+    document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    toast("data.js сохранён в «Загрузки» — залейте его в репозиторий");
+  }
+
+  // ---------- управление ----------
+  $("#q").addEventListener("input", e => { state.q = e.target.value.trim(); render(); });
+  $("#addBtn").onclick = () => openEditor(null);
+  $("#exportBtn").onclick = exportDataJs;
+  $("#resetBtn").onclick = () => { if (confirm("Удалить все правки, сделанные в этом браузере, и вернуться к data.js?")){ overlay = { added: [], changed: {}, deleted: [] }; store.del(OKEY); build(); render(); toast("Правки сброшены"); } };
+  $("#densityBtn").onclick = () => {
+    compact = !compact; document.body.classList.toggle("compact", compact);
+    $("#densityBtn").textContent = compact ? "Полностью" : "Компактно"; store.set("compact", compact?"1":"0");
+  };
+  $("#themeBtn").onclick = () => {
+    const cur = document.documentElement.dataset.theme || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    const next = cur === "dark" ? "light" : "dark";
+    document.documentElement.dataset.theme = next; store.set("theme", next);
+  };
+  $("#collapseBtn").onclick = () => {
+    const all = sections(); const allCollapsed = all.every(s => state.collapsed.has(s));
+    state.collapsed = allCollapsed ? new Set() : new Set(all);
+    store.set("collapsed", JSON.stringify([...state.collapsed])); render();
+  };
+  $("#totop").onclick = () => window.scrollTo({ top: 0, behavior: "smooth" });
+  addEventListener("scroll", () => $("#totop").classList.toggle("show", scrollY > 600), { passive: true });
+  document.addEventListener("keydown", e => {
+    const inField = /INPUT|TEXTAREA/.test(document.activeElement && document.activeElement.tagName);
+    if (e.key === "/" && !inField){ e.preventDefault(); $("#q").focus(); }
+    if (e.key === "Escape" && document.activeElement === $("#q")){ $("#q").value=""; state.q=""; render(); $("#q").blur(); }
+  });
+  document.addEventListener("paste", e => {
+    const inField = /INPUT|TEXTAREA/.test(document.activeElement && document.activeElement.tagName);
+    if (inField || state.editing) return;
+    const text = e.clipboardData && e.clipboardData.getData("text");
+    if (text && text.trim()){ e.preventDefault(); openEditor(null, text.replace(/\s+$/,"")); toast("Код вставлен — дайте ему название"); }
+  });
+
+  // ---------- старт ----------
+  $("#loading") && $("#loading").remove();
+  build(); render();
+})();
+</script>
+</body>
+</html>
